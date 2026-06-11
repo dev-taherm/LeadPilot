@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { Badge } from '@/components/ui/Badge';
-import { get, put } from '@/lib/api';
+import { get, put, post } from '@/lib/api';
 
 interface AIConfig {
   ai_prompt_config: Record<string, string>;
@@ -178,7 +178,7 @@ export default function AISettingsPage() {
     setIsTesting(true);
     setTestResult(null);
     try {
-      const res = await put<{ response: string }>('/businesses/ai-config/test/', {
+      const res = await post<{ response: string }>('/businesses/ai-config/test/', {
         system_prompt: config.system_prompt,
         personality_tone: config.personality_tone,
         qualification_criteria: config.qualification_criteria,
