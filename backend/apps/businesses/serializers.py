@@ -6,7 +6,7 @@ PROVIDER_DEFAULTS = {
     'openai': {'base_url': 'https://api.openai.com/v1', 'model': 'gpt-4o'},
     'openai_compatible': {'base_url': 'https://openrouter.ai/api/v1', 'model': 'openai/gpt-4o'},
     'anthropic': {'base_url': '', 'model': 'claude-sonnet-4-20250514'},
-    'google': {'base_url': '', 'model': 'gemini-pro'},
+    'google': {'base_url': '', 'model': 'gemini-2.0-flash'},
     'mistral': {'base_url': '', 'model': 'mistral-large-latest'},
     'ollama': {'base_url': 'http://localhost:11434/v1', 'model': 'llama3'},
     'local': {'base_url': 'http://localhost:1234/v1', 'model': ''},

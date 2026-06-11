@@ -208,9 +208,10 @@ def _build_llm(business_data: dict):
             from langchain_google_genai import ChatGoogleGenerativeAI
             return ChatGoogleGenerativeAI(
                 google_api_key=api_key,
-                model=model or 'gemini-pro',
+                model=model or 'gemini-2.0-flash',
                 temperature=temperature,
                 max_output_tokens=max_tokens,
+                max_retries=1,
             )
         except ImportError:
             logger.error("langchain-google-genai not installed. Run: pip install langchain-google-genai")

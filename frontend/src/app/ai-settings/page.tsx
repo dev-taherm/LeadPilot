@@ -45,7 +45,7 @@ const providerDefaults: Record<string, { base_url: string; model: string; placeh
   openai_compatible: { base_url: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o', placeholder_key: 'sk-or-...' },
   ollama: { base_url: 'http://localhost:11434/v1', model: 'llama3', placeholder_key: '' },
   anthropic: { base_url: '', model: 'claude-sonnet-4-20250514', placeholder_key: 'sk-ant-...' },
-  google: { base_url: '', model: 'gemini-pro', placeholder_key: 'AIza...' },
+  google: { base_url: '', model: 'gemini-2.0-flash', placeholder_key: 'AIza...' },
   mistral: { base_url: '', model: 'mistral-large-latest', placeholder_key: '' },
   local: { base_url: 'http://localhost:1234/v1', model: '', placeholder_key: '' },
 };
