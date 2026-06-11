@@ -1,7 +1,7 @@
 import logging
-from datetime import datetime, timezone as tz
 
 from django.db import transaction
+from django.utils import timezone
 
 from .graph import get_compiled_graph
 from .models import AgentExecution
@@ -58,10 +58,10 @@ class AgentRunner:
                 self.execution.error_message = error_message
                 update_fields.append('error_message')
             if status == AgentExecution.Status.RUNNING and not self.execution.started_at:
-                self.execution.started_at = tz.now()
+                self.execution.started_at = timezone.now()
                 update_fields.append('started_at')
             if status in (AgentExecution.Status.COMPLETED, AgentExecution.Status.FAILED):
-                self.execution.completed_at = tz.now()
+                self.execution.completed_at = timezone.now()
                 update_fields.append('completed_at')
             self.execution.save(update_fields=update_fields)
 
@@ -80,8 +80,9 @@ class AgentRunner:
                     msgs = Message.objects.filter(
                         conversation=self.conversation,
                     ).order_by('created_at')
+                    _role_map = {'lead': 'user', 'ai': 'assistant', 'staff': 'assistant', 'system': 'system'}
                     conversation_history = [
-                        {'role': m.role, 'content': m.content}
+                        {'role': _role_map.get(m.sender_type, 'user'), 'content': m.content}
                         for m in msgs
                     ]
                 except (ImportError, AttributeError):

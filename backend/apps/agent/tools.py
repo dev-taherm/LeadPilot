@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.utils import timezone
 
@@ -46,7 +46,7 @@ def book_meeting(
             title=title,
             start_time=meeting_datetime,
             end_time=(
-                timezone.datetime.fromisoformat(meeting_datetime)
+                datetime.fromisoformat(meeting_datetime)
                 + timedelta(minutes=duration_minutes)
             ).isoformat(),
             lead=lead,

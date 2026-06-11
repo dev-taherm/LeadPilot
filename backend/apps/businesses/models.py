@@ -20,6 +20,7 @@ class Business(models.Model):
     ai_provider = models.CharField(
         max_length=30,
         choices=[
+            ('', 'Not Configured'),
             ('mock', 'Mock (No LLM)'),
             ('openai', 'OpenAI'),
             ('openai_compatible', 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)'),

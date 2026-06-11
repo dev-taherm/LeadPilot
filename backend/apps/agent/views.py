@@ -35,6 +35,11 @@ class AgentRunView(APIView):
             return error_response(message='Lead not found', status_code=404)
 
         business = lead.business
+        if not business:
+            return error_response(
+                message='Lead is not associated with a business',
+                status_code=400,
+            )
 
         runner = AgentRunner(lead=lead, business=business)
         result = runner.run()
