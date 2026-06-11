@@ -34,20 +34,22 @@ const providerOptions = [
   { value: 'mock', label: 'Mock (No LLM - Testing)' },
   { value: 'openai', label: 'OpenAI (GPT-4, GPT-4o, etc.)' },
   { value: 'openai_compatible', label: 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)' },
+  { value: 'ollama', label: 'Ollama (Local AI)' },
   { value: 'anthropic', label: 'Anthropic (Claude)' },
   { value: 'google', label: 'Google Gemini' },
   { value: 'mistral', label: 'Mistral AI' },
-  { value: 'local', label: 'Local LLM (Ollama, LM Studio, vLLM)' },
+  { value: 'local', label: 'Local LLM (LM Studio, vLLM, etc.)' },
 ];
 
 const providerDefaults: Record<string, { base_url: string; model: string; placeholder_key: string }> = {
   mock: { base_url: '', model: '', placeholder_key: '' },
   openai: { base_url: 'https://api.openai.com/v1', model: 'gpt-4o', placeholder_key: 'sk-...' },
   openai_compatible: { base_url: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o', placeholder_key: 'sk-or-...' },
+  ollama: { base_url: 'http://localhost:11434/v1', model: 'llama3', placeholder_key: '' },
   anthropic: { base_url: '', model: 'claude-sonnet-4-20250514', placeholder_key: 'sk-ant-...' },
   google: { base_url: '', model: 'gemini-pro', placeholder_key: 'AIza...' },
   mistral: { base_url: '', model: 'mistral-large-latest', placeholder_key: '' },
-  local: { base_url: 'http://localhost:11434/v1', model: 'llama3', placeholder_key: 'no-key' },
+  local: { base_url: 'http://localhost:1234/v1', model: '', placeholder_key: '' },
 };
 
 const toneOptions = [
@@ -280,7 +282,15 @@ export default function AISettingsPage() {
             {config.ai_provider === 'local' && isProviderActive && (
               <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <p className="text-sm text-amber-800">
-                  <strong>Local LLM:</strong> Make sure your local server (Ollama, LM Studio, etc.) is running and accessible at the Base URL. No API key is required.
+                  <strong>Local LLM:</strong> Make sure your local server (LM Studio, vLLM, etc.) is running and accessible at the Base URL. No API key is required.
+                </p>
+              </div>
+            )}
+
+            {config.ai_provider === 'ollama' && isProviderActive && (
+              <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                <p className="text-sm text-purple-800">
+                  <strong>Ollama:</strong> Make sure Ollama is running (<code>ollama serve</code>). Default endpoint is <code>http://localhost:11434/v1</code>. No API key needed. Install models with <code>ollama pull llama3</code>.
                 </p>
               </div>
             )}
