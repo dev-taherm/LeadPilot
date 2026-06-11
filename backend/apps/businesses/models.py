@@ -17,6 +17,24 @@ class Business(models.Model):
     timezone = models.CharField(max_length=50, default='UTC')
     operating_hours = models.JSONField(default=dict, blank=True)
     ai_prompt_config = models.JSONField(default=dict, blank=True)
+    ai_provider = models.CharField(
+        max_length=20,
+        choices=[
+            ('mock', 'Mock (No LLM)'),
+            ('openai', 'OpenAI'),
+            ('openai_compatible', 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)'),
+            ('anthropic', 'Anthropic (Claude)'),
+            ('google', 'Google Gemini'),
+            ('mistral', 'Mistral AI'),
+            ('local', 'Local LLM (Ollama, LM Studio, vLLM)'),
+        ],
+        default='mock',
+    )
+    ai_api_key = models.CharField(max_length=500, blank=True, default='')
+    ai_base_url = models.URLField(max_length=500, blank=True, default='')
+    ai_model = models.CharField(max_length=100, blank=True, default='')
+    ai_temperature = models.FloatField(default=0.7)
+    ai_max_tokens = models.IntegerField(default=1024)
     owner = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
