@@ -34,6 +34,7 @@ const providerOptions = [
   { value: 'openai', label: 'OpenAI (GPT-4, GPT-4o, etc.)' },
   { value: 'openai_compatible', label: 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)' },
   { value: 'ollama', label: 'Ollama (Local AI)' },
+  { value: 'ollama_cloud', label: 'Ollama Cloud' },
   { value: 'anthropic', label: 'Anthropic (Claude)' },
   { value: 'google', label: 'Google Gemini' },
   { value: 'mistral', label: 'Mistral AI' },
@@ -44,6 +45,7 @@ const providerDefaults: Record<string, { base_url: string; model: string; placeh
   openai: { base_url: 'https://api.openai.com/v1', model: 'gpt-4o', placeholder_key: 'sk-...' },
   openai_compatible: { base_url: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o', placeholder_key: 'sk-or-...' },
   ollama: { base_url: 'http://localhost:11434/v1', model: 'llama3', placeholder_key: '' },
+  ollama_cloud: { base_url: 'https://ollama.com/v1', model: 'gpt-oss:120b-cloud', placeholder_key: 'ollama_...' },
   anthropic: { base_url: '', model: 'claude-sonnet-4-20250514', placeholder_key: 'sk-ant-...' },
   google: { base_url: '', model: 'gemini-2.0-flash', placeholder_key: 'AIza...' },
   mistral: { base_url: '', model: 'mistral-large-latest', placeholder_key: '' },
@@ -289,6 +291,14 @@ export default function AISettingsPage() {
               <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
                 <p className="text-sm text-purple-800">
                   <strong>Ollama:</strong> Make sure Ollama is running (<code>ollama serve</code>). Default endpoint is <code>http://localhost:11434/v1</code>. No API key needed. Install models with <code>ollama pull llama3</code>.
+                </p>
+              </div>
+            )}
+
+            {config.ai_provider === 'ollama_cloud' && isProviderActive && (
+              <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                <p className="text-sm text-purple-800">
+                  <strong>Ollama Cloud:</strong> Uses Ollama&apos;s cloud API at <code>https://ollama.com/v1</code>. Get your API key at <a href="https://ollama.com/settings/keys" target="_blank" rel="noopener noreferrer" className="underline">ollama.com/settings/keys</a>. Cloud models use the <code>-cloud</code> suffix (e.g. <code>gpt-oss:120b-cloud</code>).
                 </p>
               </div>
             )}

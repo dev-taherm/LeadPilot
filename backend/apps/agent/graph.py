@@ -190,6 +190,20 @@ def _build_llm(business_data: dict):
             logger.error("langchain-openai not installed. Run: pip install langchain-openai")
             return None
 
+    if provider == 'ollama_cloud':
+        try:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                base_url=base_url or 'https://ollama.com/v1',
+                api_key=api_key,
+                model=model or 'gpt-oss:120b-cloud',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-openai not installed. Run: pip install langchain-openai")
+            return None
+
     if provider == 'anthropic':
         try:
             from langchain_anthropic import ChatAnthropic

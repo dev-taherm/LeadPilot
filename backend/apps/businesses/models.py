@@ -25,6 +25,7 @@ class Business(models.Model):
             ('openai', 'OpenAI'),
             ('openai_compatible', 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)'),
             ('ollama', 'Ollama (Local AI)'),
+            ('ollama_cloud', 'Ollama Cloud'),
             ('anthropic', 'Anthropic (Claude)'),
             ('google', 'Google Gemini'),
             ('mistral', 'Mistral AI'),

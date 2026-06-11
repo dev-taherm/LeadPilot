@@ -9,6 +9,7 @@ PROVIDER_DEFAULTS = {
     'google': {'base_url': '', 'model': 'gemini-2.0-flash'},
     'mistral': {'base_url': '', 'model': 'mistral-large-latest'},
     'ollama': {'base_url': 'http://localhost:11434/v1', 'model': 'llama3'},
+    'ollama_cloud': {'base_url': 'https://ollama.com/v1', 'model': 'gpt-oss:120b-cloud'},
     'local': {'base_url': 'http://localhost:1234/v1', 'model': ''},
 }
 
