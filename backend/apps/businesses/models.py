@@ -18,15 +18,16 @@ class Business(models.Model):
     operating_hours = models.JSONField(default=dict, blank=True)
     ai_prompt_config = models.JSONField(default=dict, blank=True)
     ai_provider = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=[
             ('mock', 'Mock (No LLM)'),
             ('openai', 'OpenAI'),
             ('openai_compatible', 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)'),
+            ('ollama', 'Ollama (Local AI)'),
             ('anthropic', 'Anthropic (Claude)'),
             ('google', 'Google Gemini'),
             ('mistral', 'Mistral AI'),
-            ('local', 'Local LLM (Ollama, LM Studio, vLLM)'),
+            ('local', 'Local LLM (LM Studio, vLLM, etc.)'),
         ],
         default='mock',
     )
