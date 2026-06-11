@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Leads", icon: Users, href: "/leads" },
   { label: "Conversations", icon: MessageSquare, href: "/conversations" },
+  { label: "Channels", icon: Radio, href: "/channels" },
   { label: "Calendar", icon: Calendar, href: "/calendar" },
   { label: "Knowledge Base", icon: BookOpen, href: "/knowledge-base" },
   { label: "Analytics", icon: BarChart3, href: "/analytics" },

@@ -19,6 +19,27 @@ def _get_business(business_id: str):
 
 
 def send_email(lead_email: str, subject: str, body: str) -> dict:
+    try:
+        from apps.channels.models import ChannelIntegration
+        from apps.channels.adapters import get_adapter
+
+        email_integration = ChannelIntegration.objects.filter(
+            channel_type='email',
+            is_active=True,
+        ).first()
+
+        if email_integration:
+            adapter = get_adapter(email_integration)
+            result = adapter.send_message(
+                to=lead_email,
+                content=body,
+                subject=subject,
+            )
+            result['sent_at'] = timezone.now().isoformat()
+            return result
+    except Exception as e:
+        logger.warning("Email adapter send failed, using stub: %s", e)
+
     logger.info("Sending email to %s: %s", lead_email, subject)
     result = {
         'success': True,
@@ -29,6 +50,36 @@ def send_email(lead_email: str, subject: str, body: str) -> dict:
     }
     logger.info("Email sent successfully: %s", result)
     return result
+
+
+def send_channel_message(business_id: str, channel_type: str, to: str, content: str) -> dict:
+    try:
+        from apps.channels.models import ChannelIntegration
+        from apps.channels.adapters import get_adapter
+
+        integration = ChannelIntegration.objects.filter(
+            business_id=business_id,
+            channel_type=channel_type,
+            is_active=True,
+        ).first()
+
+        if not integration:
+            return {
+                'success': False,
+                'error': f'No active {channel_type} channel found',
+            }
+
+        adapter = get_adapter(integration)
+        result = adapter.send_message(to=to, content=content)
+        result['channel_type'] = channel_type
+        result['sent_at'] = timezone.now().isoformat()
+        return result
+    except Exception as e:
+        logger.exception("Channel message send failed")
+        return {
+            'success': False,
+            'error': str(e),
+        }
 
 
 def book_meeting(

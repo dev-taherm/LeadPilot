@@ -435,7 +435,7 @@ def _build_system_prompt(state: AgentState) -> str:
         "3. If qualified, book a meeting",
         "4. If not ready, schedule a follow-up",
         "\nRespond with a JSON object containing:",
-        '- "decision": one of "send_message", "book_meeting", "schedule_followup", "update_status", "notify_sales", "search_knowledge", "create_note"',
+        '- "decision": one of "send_message", "send_channel_message", "book_meeting", "schedule_followup", "update_status", "notify_sales", "search_knowledge", "create_note"',
         '- "tool_output": the data needed for that tool',
         '- "should_finish": true if the conversation is complete',
     ])
@@ -452,6 +452,12 @@ def call_tool(state: AgentState) -> dict:
             tool_output.get('to', ''),
             tool_output.get('subject', ''),
             tool_output.get('body', ''),
+        ),
+        'send_channel_message': lambda: send_channel_message(
+            state['business_id'],
+            tool_output.get('channel_type', ''),
+            tool_output.get('to', ''),
+            tool_output.get('content', ''),
         ),
         'book_meeting': lambda: book_meeting(
             tool_output.get('lead_id', state['lead_id']),
@@ -543,6 +549,7 @@ def finish(state: AgentState) -> dict:
 
 from .tools import (  # noqa: E402
     send_email,
+    send_channel_message,
     book_meeting,
     schedule_followup,
     update_lead_status,
@@ -563,6 +570,7 @@ def route_after_decide(state: AgentState) -> str:
     decision = state.get('decision', '')
     if decision in (
         'send_message',
+        'send_channel_message',
         'book_meeting',
         'schedule_followup',
         'update_lead_status',

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'apps.calendar_integration',
     'apps.analytics',
     'apps.notifications',
+    'apps.channels',
 ]
 
 MIDDLEWARE = [

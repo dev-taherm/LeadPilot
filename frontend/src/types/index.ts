@@ -146,3 +146,20 @@ export interface ApiResponse<T> {
     details: Record<string, unknown>;
   };
 }
+
+export type ChannelType = 'whatsapp' | 'telegram' | 'sms' | 'email' | 'slack' | 'discord' | 'instagram' | 'facebook';
+
+export interface ChannelIntegration {
+  id: string;
+  business: string;
+  channel_type: ChannelType;
+  name: string;
+  is_active: boolean;
+  config: Record<string, string>;
+  webhook_secret: string;
+  status: 'connected' | 'disconnected' | 'error';
+  last_error: string;
+  last_connected_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
