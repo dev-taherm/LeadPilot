@@ -1,5 +1,4 @@
 import logging
-import operator
 import os
 from typing import Annotated, Any, Sequence
 
@@ -9,10 +8,6 @@ from langgraph.graph import END, StateGraph
 from .state import AgentState, merge_messages
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Mock response generator
-# ---------------------------------------------------------------------------
 
 QUALIFICATION_QUESTIONS = [
     "What is the size of your team?",
@@ -114,7 +109,6 @@ def generate_mock_response(state: AgentState) -> dict:
             'next_action': 'qualify_lead',
         }
 
-    # qualification_done - check if qualified
     score = lead_data.get('score', 0)
     if score >= 50:
         return {
@@ -142,6 +136,100 @@ def generate_mock_response(state: AgentState) -> dict:
         'should_finish': False,
         'next_action': 'schedule_followup',
     }
+
+
+def _build_llm(business_data: dict):
+    provider = business_data.get('ai_provider', 'mock')
+    api_key = business_data.get('ai_api_key', '')
+    base_url = business_data.get('ai_base_url', '')
+    model = business_data.get('ai_model', '')
+    temperature = business_data.get('ai_temperature', 0.7)
+    max_tokens = business_data.get('ai_max_tokens', 1024)
+
+    if provider == 'mock':
+        return None
+
+    if provider == 'openai':
+        try:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                api_key=api_key or os.environ.get('OPENAI_API_KEY', ''),
+                model=model or 'gpt-4o',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-openai not installed. Run: pip install langchain-openai")
+            return None
+
+    if provider == 'openai_compatible':
+        try:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                api_key=api_key,
+                base_url=base_url or 'https://openrouter.ai/api/v1',
+                model=model or 'openai/gpt-4o',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-openai not installed. Run: pip install langchain-openai")
+            return None
+
+    if provider == 'anthropic':
+        try:
+            from langchain_anthropic import ChatAnthropic
+            return ChatAnthropic(
+                api_key=api_key,
+                model=model or 'claude-sonnet-4-20250514',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-anthropic not installed. Run: pip install langchain-anthropic")
+            return None
+
+    if provider == 'google':
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            return ChatGoogleGenerativeAI(
+                google_api_key=api_key,
+                model=model or 'gemini-pro',
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-google-genai not installed. Run: pip install langchain-google-genai")
+            return None
+
+    if provider == 'mistral':
+        try:
+            from langchain_mistralai import ChatMistralAI
+            return ChatMistralAI(
+                api_key=api_key,
+                model=model or 'mistral-large-latest',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-mistralai not installed. Run: pip install langchain-mistralai")
+            return None
+
+    if provider == 'local':
+        try:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                base_url=base_url or 'http://localhost:11434/v1',
+                model=model or 'llama3',
+                api_key='no-key',
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except ImportError:
+            logger.error("langchain-openai not installed. Run: pip install langchain-openai")
+            return None
+
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +270,12 @@ def load_business(state: AgentState) -> dict:
             'faq': business.faq,
             'timezone': business.timezone,
             'ai_prompt_config': business.ai_prompt_config,
+            'ai_provider': business.ai_provider,
+            'ai_api_key': business.ai_api_key,
+            'ai_base_url': business.ai_base_url,
+            'ai_model': business.ai_model,
+            'ai_temperature': business.ai_temperature,
+            'ai_max_tokens': business.ai_max_tokens,
         },
     }
 
@@ -211,7 +305,8 @@ def load_memory(state: AgentState) -> dict:
 
 
 def decide_action(state: AgentState) -> dict:
-    provider = os.environ.get('AI_PROVIDER', 'mock')
+    business_data = state.get('business_data', {})
+    provider = business_data.get('ai_provider', 'mock')
 
     if provider == 'mock':
         result = generate_mock_response(state)
@@ -228,16 +323,20 @@ def decide_action(state: AgentState) -> dict:
             ],
         }
 
+    llm = _build_llm(business_data)
+    if llm is None:
+        logger.warning("Failed to build LLM for provider '%s', falling back to mock", provider)
+        result = generate_mock_response(state)
+        return {
+            'decision': result['decision'],
+            'tool_output': result['tool_output'],
+            'should_finish': result['should_finish'],
+            'messages': [
+                {'role': 'assistant', 'content': f"Decision: {result['decision']}"}
+            ],
+        }
+
     try:
-        from langchain_anthropic import ChatAnthropic
-        from langchain_openai import ChatOpenAI
-
-        llm_provider = os.environ.get('LLM_PROVIDER', 'openai')
-        if llm_provider == 'anthropic':
-            llm = ChatAnthropic(model=os.environ.get('LLM_MODEL', 'claude-sonnet-4-20250514'))
-        else:
-            llm = ChatOpenAI(model=os.environ.get('LLM_MODEL', 'gpt-4o'))
-
         system_prompt = _build_system_prompt(state)
         messages = [SystemMessage(content=system_prompt)]
 
@@ -281,11 +380,14 @@ def _build_system_prompt(state: AgentState) -> str:
     lead = state.get('lead_data', {})
     memory = state.get('memory', [])
 
+    custom_prompt = business.get('ai_prompt_config', {}).get('system_prompt', '')
+
     prompt_parts = [
-        "You are an AI sales assistant for {business_name}. Your role is to qualify leads and book meetings.".format(
-            business_name=business.get('name', 'the company')
-        ),
-        f"Industry: {business.get('industry', 'Unknown')}",
+        custom_prompt or (
+            "You are an AI sales assistant for {business_name}. "
+            "Your role is to qualify leads and book meetings."
+        ).format(business_name=business.get('name', 'the company')),
+        f"\nIndustry: {business.get('industry', 'Unknown')}",
         f"Services: {', '.join(business.get('services', []))}",
         f"Lead: {lead.get('name', 'Unknown')} ({lead.get('company', 'Unknown company')})",
         f"Lead score: {lead.get('score', 0)}/100",
@@ -404,6 +506,21 @@ def finish(state: AgentState) -> dict:
             {'role': 'assistant', 'content': 'Agent execution completed.'}
         ],
     }
+
+
+# ---------------------------------------------------------------------------
+# Tool imports
+# ---------------------------------------------------------------------------
+
+from .tools import (  # noqa: E402
+    send_email,
+    book_meeting,
+    schedule_followup,
+    update_lead_status,
+    notify_sales,
+    search_knowledge,
+    create_note,
+)
 
 
 # ---------------------------------------------------------------------------
