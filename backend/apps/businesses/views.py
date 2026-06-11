@@ -2,7 +2,13 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Business
-from .serializers import BusinessSerializer, BusinessPublicSerializer, AIConfigSerializer
+from .serializers import (
+    BusinessSerializer,
+    BusinessPublicSerializer,
+    AIConfigSerializer,
+    ProviderDefaultsSerializer,
+    PROVIDER_DEFAULTS,
+)
 
 
 class IsOwnerOrStaff(permissions.BasePermission):
@@ -39,26 +45,45 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
 
 class AIConfigView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrStaff]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_business(self, slug):
-        return Business.objects.get(slug=slug)
+    def get_business(self, request):
+        if hasattr(request, 'tenant') and request.tenant:
+            return request.tenant
+        return Business.objects.filter(owner=request.user).first()
 
-    def get(self, request, slug):
-        business = self.get_business(slug)
-        self.check_object_permissions(request, business)
+    def get(self, request):
+        business = self.get_business(request)
+        if not business:
+            return Response(
+                {'detail': 'No business found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = AIConfigSerializer(business)
         return Response(serializer.data)
 
-    def put(self, request, slug):
-        business = self.get_business(slug)
-        self.check_object_permissions(request, business)
-        if business.owner != request.user:
+    def put(self, request):
+        business = self.get_business(request)
+        if not business:
+            return Response(
+                {'detail': 'No business found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if business.owner != request.user and request.user.role != 'super_admin':
             return Response(
                 {'detail': 'Only the owner can update AI config.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        serializer = AIConfigSerializer(business, data=request.data)
+        serializer = AIConfigSerializer(business, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(AIConfigSerializer(business).data)
+
+
+class ProviderDefaultsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        provider = request.query_params.get('provider', 'mock')
+        defaults = PROVIDER_DEFAULTS.get(provider, PROVIDER_DEFAULTS['mock'])
+        return Response(defaults)
