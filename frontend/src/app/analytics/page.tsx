@@ -44,72 +44,28 @@ const dateRangeOptions: { value: DateRange; label: string }[] = [
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-const mockPipelineData = [
-  { status: 'New', count: 45, fill: '#3B82F6' },
-  { status: 'Contacted', count: 32, fill: '#6B7280' },
-  { status: 'Qualified', count: 28, fill: '#10B981' },
-  { status: 'Meeting', count: 15, fill: '#F59E0B' },
-  { status: 'Won', count: 12, fill: '#22C55E' },
-  { status: 'Lost', count: 8, fill: '#EF4444' },
-];
-
-const mockSourceData = [
-  { name: 'Website', value: 35, fill: '#3B82F6' },
-  { name: 'Referral', value: 25, fill: '#10B981' },
-  { name: 'Social', value: 20, fill: '#F59E0B' },
-  { name: 'Cold Call', value: 12, fill: '#8B5CF6' },
-  { name: 'Ads', value: 8, fill: '#EC4899' },
-];
-
-const mockFunnelData = [
-  { stage: 'Leads', value: 100, fill: '#3B82F6' },
-  { stage: 'Contacted', value: 72, fill: '#6366F1' },
-  { stage: 'Qualified', value: 45, fill: '#8B5CF6' },
-  { stage: 'Meeting', value: 25, fill: '#A855F7' },
-  { stage: 'Won', value: 12, fill: '#10B981' },
-];
-
-const mockResponseTimeData = [
-  { day: 'Mon', minutes: 4.2 },
-  { day: 'Tue', minutes: 3.8 },
-  { day: 'Wed', minutes: 5.1 },
-  { day: 'Thu', minutes: 3.5 },
-  { day: 'Fri', minutes: 4.8 },
-  { day: 'Sat', minutes: 6.2 },
-  { day: 'Sun', minutes: 5.5 },
-];
-
-const mockAiUsageData = [
-  { day: 'Mon', interactions: 45 },
-  { day: 'Tue', interactions: 52 },
-  { day: 'Wed', interactions: 61 },
-  { day: 'Thu', interactions: 48 },
-  { day: 'Fri', interactions: 73 },
-  { day: 'Sat', interactions: 35 },
-  { day: 'Sun', interactions: 28 },
-];
-
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<DateRange>('month');
   const [isLoading, setIsLoading] = useState(true);
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [snapshots, setSnapshots] = useState<AnalyticsSnapshot[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const [kpis, setKpis] = useState({
-    totalLeads: 140,
-    newLeads: 45,
-    qualified: 28,
-    meetings: 15,
-    conversionRate: 8.6,
-    avgResponseTime: 4.6,
+    totalLeads: 0,
+    newLeads: 0,
+    qualified: 0,
+    meetings: 0,
+    conversionRate: 0,
+    avgResponseTime: 0,
   });
 
-  const [pipelineData, setPipelineData] = useState(mockPipelineData);
-  const [sourceData, setSourceData] = useState(mockSourceData);
-  const [funnelData, setFunnelData] = useState(mockFunnelData);
-  const [responseTimeData, setResponseTimeData] = useState(mockResponseTimeData);
-  const [aiUsageData, setAiUsageData] = useState(mockAiUsageData);
+  const [pipelineData, setPipelineData] = useState<{ status: string; count: number; fill: string }[]>([]);
+  const [sourceData, setSourceData] = useState<{ name: string; value: number; fill: string }[]>([]);
+  const [funnelData, setFunnelData] = useState<{ stage: string; value: number; fill: string }[]>([]);
+  const [responseTimeData, setResponseTimeData] = useState<{ day: string; minutes: number }[]>([]);
+  const [aiUsageData, setAiUsageData] = useState<{ day: string; interactions: number }[]>([]);
 
   const fetchAnalytics = useCallback(async () => {
     setIsLoading(true);
@@ -138,7 +94,14 @@ export default function AnalyticsPage() {
         });
       }
     } catch {
-      // use mock data on error
+      setError('Failed to load analytics data');
+      setSnapshots([]);
+      setKpis({ totalLeads: 0, newLeads: 0, qualified: 0, meetings: 0, conversionRate: 0, avgResponseTime: 0 });
+      setPipelineData([]);
+      setSourceData([]);
+      setFunnelData([]);
+      setResponseTimeData([]);
+      setAiUsageData([]);
     } finally {
       setIsLoading(false);
     }
@@ -233,6 +196,15 @@ export default function AnalyticsPage() {
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Spinner size="lg" />
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <p className="text-sm text-gray-500">{error}</p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => { setError(null); setIsLoading(true); fetchAnalytics(); }}>
+                Retry
+              </Button>
+            </div>
           </div>
         ) : (
           <>

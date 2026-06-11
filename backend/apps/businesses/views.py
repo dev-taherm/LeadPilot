@@ -84,6 +84,6 @@ class ProviderDefaultsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        provider = request.query_params.get('provider', 'mock')
-        defaults = PROVIDER_DEFAULTS.get(provider, PROVIDER_DEFAULTS['mock'])
+        provider = request.query_params.get('provider', '')
+        defaults = PROVIDER_DEFAULTS.get(provider, {'base_url': '', 'model': ''})
         return Response(defaults)

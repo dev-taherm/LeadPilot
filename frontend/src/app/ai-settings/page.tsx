@@ -31,7 +31,6 @@ interface AIConfig {
 }
 
 const providerOptions = [
-  { value: 'mock', label: 'Mock (No LLM - Testing)' },
   { value: 'openai', label: 'OpenAI (GPT-4, GPT-4o, etc.)' },
   { value: 'openai_compatible', label: 'OpenAI-Compatible (OpenRouter, Together, Groq, etc.)' },
   { value: 'ollama', label: 'Ollama (Local AI)' },
@@ -42,7 +41,6 @@ const providerOptions = [
 ];
 
 const providerDefaults: Record<string, { base_url: string; model: string; placeholder_key: string }> = {
-  mock: { base_url: '', model: '', placeholder_key: '' },
   openai: { base_url: 'https://api.openai.com/v1', model: 'gpt-4o', placeholder_key: 'sk-...' },
   openai_compatible: { base_url: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o', placeholder_key: 'sk-or-...' },
   ollama: { base_url: 'http://localhost:11434/v1', model: 'llama3', placeholder_key: '' },
@@ -60,7 +58,7 @@ const toneOptions = [
 
 const defaultConfig: AIConfig = {
   ai_prompt_config: {},
-  ai_provider: 'mock',
+  ai_provider: '',
   ai_api_key: '',
   ai_api_key_display: '',
   ai_base_url: '',
@@ -99,7 +97,7 @@ export default function AISettingsPage() {
         const data = res.data;
         setConfig({
           ai_prompt_config: data.ai_prompt_config || {},
-          ai_provider: data.ai_provider || 'mock',
+          ai_provider: data.ai_provider || '',
           ai_api_key: '',
           ai_api_key_display: data.ai_api_key_display || '',
           ai_base_url: data.ai_base_url || '',
@@ -189,7 +187,7 @@ export default function AISettingsPage() {
       );
     } catch {
       setTestResult(
-        'Sample AI Response: Hello! Thank you for reaching out. I would be happy to help you with your inquiry. Could you tell me more about your specific needs and how we can assist you today?'
+        'Error: Failed to get AI response. Make sure your provider is configured correctly and try again.'
       );
     } finally {
       setIsTesting(false);
@@ -206,8 +204,8 @@ export default function AISettingsPage() {
     );
   }
 
-  const isProviderActive = config.ai_provider !== 'mock';
-  const defaults = providerDefaults[config.ai_provider] || providerDefaults.mock;
+  const isProviderActive = config.ai_provider !== '';
+  const defaults = providerDefaults[config.ai_provider] || { base_url: '', model: '', placeholder_key: '' };
 
   return (
     <AppLayout>
@@ -299,14 +297,6 @@ export default function AISettingsPage() {
               <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
                 <p className="text-sm text-blue-800">
                   <strong>OpenAI-Compatible:</strong> Works with OpenRouter, Together AI, Groq, Fireworks, Deepseek, and any OpenAI-compatible API. Set the Base URL to your provider&apos;s endpoint.
-                </p>
-              </div>
-            )}
-
-            {config.ai_provider === 'mock' && (
-              <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
-                <p className="text-sm text-green-800">
-                  <strong>Mock Mode:</strong> No API key needed. The agent will use pre-built responses for testing. Switch to a real provider to enable AI-powered conversations.
                 </p>
               </div>
             )}

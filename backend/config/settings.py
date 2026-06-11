@@ -147,7 +147,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
-AI_PROVIDER = config('AI_PROVIDER', default='mock')
+AI_PROVIDER = config('AI_PROVIDER', default='')
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
 OPENAI_BASE_URL = config('OPENAI_BASE_URL', default='https://api.openai.com/v1')
 LOCAL_LLM_URL = config('LOCAL_LLM_URL', default='http://localhost:11434/v1')

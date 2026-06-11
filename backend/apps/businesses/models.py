@@ -29,7 +29,7 @@ class Business(models.Model):
             ('mistral', 'Mistral AI'),
             ('local', 'Local LLM (LM Studio, vLLM, etc.)'),
         ],
-        default='mock',
+        default='',
     )
     ai_api_key = models.CharField(max_length=500, blank=True, default='')
     ai_base_url = models.URLField(max_length=500, blank=True, default='')

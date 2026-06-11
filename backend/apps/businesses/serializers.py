@@ -8,8 +8,8 @@ PROVIDER_DEFAULTS = {
     'anthropic': {'base_url': '', 'model': 'claude-sonnet-4-20250514'},
     'google': {'base_url': '', 'model': 'gemini-pro'},
     'mistral': {'base_url': '', 'model': 'mistral-large-latest'},
-    'local': {'base_url': 'http://localhost:11434/v1', 'model': 'llama3'},
-    'mock': {'base_url': '', 'model': ''},
+    'ollama': {'base_url': 'http://localhost:11434/v1', 'model': 'llama3'},
+    'local': {'base_url': 'http://localhost:1234/v1', 'model': ''},
 }
 
 
