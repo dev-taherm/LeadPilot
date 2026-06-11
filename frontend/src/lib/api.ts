@@ -53,6 +53,30 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response?.data) {
+      const errData = error.response.data as Record<string, unknown>;
+      const backendError = errData.error as { message?: string } | undefined;
+
+      let message: string | null = null;
+
+      if (errData.errors && typeof errData.errors === 'object') {
+        const fieldErrors = errData.errors as Record<string, string | string[]>;
+        const first = Object.values(fieldErrors)[0];
+        message = Array.isArray(first) ? first[0] : String(first);
+      }
+
+      if (!message) {
+        message =
+          (errData.message as string) ||
+          backendError?.message ||
+          (typeof errData.detail === 'string' ? errData.detail : null);
+      }
+
+      if (message) {
+        return Promise.reject(new Error(message));
+      }
+    }
+
     return Promise.reject(error);
   }
 );
